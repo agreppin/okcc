@@ -8,10 +8,31 @@
 
 #define	IDENT	64
 
+/* Source.type values */
+typedef enum stype {
+	SEOF		= 0,	/* input EOF */
+	SFILE		= 1,	/* file input */
+	SSTDIN		= 2,	/* read stdin */
+	SSTRING		= 3,	/* string */
+	SWSTR		= 4,	/* string without \n */
+	SWORDS		= 5,	/* string[] */
+	SWORDSEP	= 6,	/* string[] separator */
+	SALIAS		= 7,	/* alias expansion */
+	SREREAD		= 8,	/* read ahead to be re-scanned */
+} stype_t;
+
+/* Source.flags values */
+typedef enum sflags {
+	SF_ECHO		= BIT(0),	/* echo input to shlout */
+	SF_ALIAS	= BIT(1),	/* faking space at end of alias */
+	SF_ALIASEND	= BIT(2),	/* faking space at end of alias */
+	SF_TTY		= BIT(3),	/* type == SSTDIN & it is a tty */
+} sflags_t;
+
 typedef struct source Source;
 struct source {
 	const char *str;	/* input pointer */
-	int	type;		/* input type */
+	stype_t	type;		/* input type */
 	const char *start;	/* start of current buffer */
 	union {
 		char **strv;	/* string [] */
@@ -25,28 +46,11 @@ struct source {
 	int	cmd_offset;	/* line number - command number */
 	int	errline;	/* line the error occurred on (0 if not set) */
 	const char *file;	/* input file name */
-	int	flags;		/* SF_* */
+	sflags_t flags;		/* SF_* */
 	Area	*areap;
 	XString	xs;		/* input buffer */
 	Source *next;		/* stacked source */
 };
-
-/* Source.type values */
-#define	SEOF		0	/* input EOF */
-#define	SFILE		1	/* file input */
-#define SSTDIN		2	/* read stdin */
-#define	SSTRING		3	/* string */
-#define	SWSTR		4	/* string without \n */
-#define	SWORDS		5	/* string[] */
-#define	SWORDSEP	6	/* string[] separator */
-#define	SALIAS		7	/* alias expansion */
-#define SREREAD		8	/* read ahead to be re-scanned */
-
-/* Source.flags values */
-#define SF_ECHO		BIT(0)	/* echo input to shlout */
-#define SF_ALIAS	BIT(1)	/* faking space at end of alias */
-#define SF_ALIASEND	BIT(2)	/* faking space at end of alias */
-#define SF_TTY		BIT(3)	/* type == SSTDIN & it is a tty */
 
 typedef union {
 	int	i;

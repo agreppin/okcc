@@ -423,12 +423,12 @@ void	set_editmode(const char *);
 /* emacs.c: most prototypes in edit.h */
 int	x_bind(const char *, const char *, int, int);
 /* eval.c */
-char *	substitute(const char *, int);
-char **	eval(char **, int);
-char *	evalstr(char *cp, int);
-char *	evalonestr(char *cp, int);
+char *	substitute(const char *, eflags_t);
+char **	eval(char **, eflags_t);
+char *	evalstr(char *cp, eflags_t);
+char *	evalonestr(char *cp, eflags_t);
 char	*debunk(char *, const char *, size_t);
-void	expand(char *, XPtrV *, int);
+void	expand(const char *, XPtrV *, eflags_t);
 int	glob_str(char *, XPtrV *, int);
 /* exec.c */
 int	execute(struct op * volatile, volatile int, volatile int *);

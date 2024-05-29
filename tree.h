@@ -6,14 +6,59 @@
 
 /* $From: tree.h,v 1.3 1994/05/31 13:34:34 michael Exp $ */
 
+/* Tree.type values */
+typedef enum ttype {
+	TEOF		= 0,
+	TCOM		= 1,	/* command */
+	TPAREN		= 2,	/* (c-list) */
+	TPIPE		= 3,	/* a | b */
+	TLIST		= 4,	/* a ; b */
+	TOR		= 5,	/* || */
+	TAND		= 6,	/* && */
+	TBANG		= 7,	/* ! */
+	TDBRACKET	= 8,	/* [[ .. ]] */
+	TFOR		= 9,
+	TSELECT		= 10,
+	TCASE		= 11,
+	TIF		= 12,
+	TWHILE		= 13,
+	TUNTIL		= 14,
+	TELIF		= 15,
+	TPAT		= 16,	/* pattern in case */
+	TBRACE		= 17,	/* {c-list} */
+	TASYNC		= 18,	/* c & */
+	TFUNCT		= 19,	/* function name { command; } */
+	TTIME		= 20,	/* time pipeline */
+	TEXEC		= 21,	/* fork/exec eval'd TCOM */
+	TCOPROC		= 22,	/* coprocess |& */
+} ttype_t;
+
+/*
+ * flags to control expansion of words (used by t->evalflags, glob(), eval(),
+ * evalonestr(), evalstr() & expand())
+ */
+typedef enum eflags {
+	DOBLANK		= BIT(0),	/* perform blank interpretation */
+	DOGLOB		= BIT(1),	/* expand [?* */
+	DOPAT		= BIT(2),	/* quote *?[ */
+	DOTILDE		= BIT(3),	/* normal ~ expansion (first char) */
+	DONTRUNCOMMAND	= BIT(4),	/* do not run $(command) things */
+	DOASNTILDE	= BIT(5),	/* assignment ~ expansion (after =, :) */
+	DOBRACE_	= BIT(6),	/* used by expand(): do brace expansion */
+	DOMAGIC_	= BIT(7),	/* used by expand(): string contains MAGIC */
+	DOTEMP_		= BIT(8),	/* ditto : in word part of ${..[%#=?]..} */
+	DOVACHECK	= BIT(9),	/* var assign check (for typeset, set, etc) */
+	DOMARKDIRS	= BIT(10),	/* force markdirs behaviour */
+} eflags_t;
+
 /*
  * Description of a command or an operation on commands.
  */
 struct op {
-	short	type;			/* operation type, see below */
+	ttype_t	type;			/* operation type, see below */
 	union { /* WARNING: newtp(), tcopy() use evalflags = 0 to clear union */
-		short	evalflags;	/* TCOM: arg expansion eval() flags */
-		short	ksh_func;	/* TFUNC: function x (vs x()) */
+		eflags_t evalflags;	/* TCOM: arg expansion eval() flags */
+		int	ksh_func;	/* TFUNC: function x (vs x()) */
 	} u;
 	char  **args;			/* arguments to a command */
 	char  **vars;			/* variable assignments */
@@ -27,46 +72,23 @@ struct op {
 	int	lineno;			/* TCOM/TFUNC: LINENO for this */
 };
 
-/* Tree.type values */
-#define	TEOF		0
-#define	TCOM		1	/* command */
-#define	TPAREN		2	/* (c-list) */
-#define	TPIPE		3	/* a | b */
-#define	TLIST		4	/* a ; b */
-#define	TOR		5	/* || */
-#define	TAND		6	/* && */
-#define TBANG		7	/* ! */
-#define TDBRACKET	8	/* [[ .. ]] */
-#define	TFOR		9
-#define TSELECT		10
-#define	TCASE		11
-#define	TIF		12
-#define	TWHILE		13
-#define	TUNTIL		14
-#define	TELIF		15
-#define	TPAT		16	/* pattern in case */
-#define	TBRACE		17	/* {c-list} */
-#define	TASYNC		18	/* c & */
-#define	TFUNCT		19	/* function name { command; } */
-#define	TTIME		20	/* time pipeline */
-#define	TEXEC		21	/* fork/exec eval'd TCOM */
-#define TCOPROC		22	/* coprocess |& */
-
 /*
  * prefix codes for words in command tree
  */
-#define	EOS	0		/* end of string */
-#define	CHAR	1		/* unquoted character */
-#define	QCHAR	2		/* quoted character */
-#define	COMSUB	3		/* $() substitution (0 terminated) */
-#define EXPRSUB	4		/* $(()) substitution (0 terminated) */
-#define	OQUOTE	5		/* opening " or ' */
-#define	CQUOTE	6		/* closing " or ' */
-#define	OSUBST	7		/* opening ${ subst (followed by { or X) */
-#define	CSUBST	8		/* closing } of above (followed by } or X) */
-#define OPAT	9		/* open pattern: *(, @(, etc. */
-#define SPAT	10		/* separate pattern: | */
-#define CPAT	11		/* close pattern: ) */
+typedef enum pcode {
+	EOS	= 0,		/* end of string */
+	CHAR	= 1,		/* unquoted character */
+	QCHAR	= 2,		/* quoted character */
+	COMSUB	= 3,		/* $() substitution (0 terminated) */
+	EXPRSUB	= 4,		/* $(()) substitution (0 terminated) */
+	OQUOTE	= 5,		/* opening " or ' */
+	CQUOTE	= 6,		/* closing " or ' */
+	OSUBST	= 7,		/* opening ${ subst (followed by { or X) */
+	CSUBST	= 8,		/* closing } of above (followed by } or X) */
+	OPAT	= 9,		/* open pattern: *(, @(, etc. */
+	SPAT	= 10,		/* separate pattern: | */
+	CPAT	= 11,		/* close pattern: ) */
+} pcode_t;
 
 /*
  * IO redirection
@@ -106,22 +128,6 @@ struct ioword {
 #define XERROK	BIT(8)		/* non-zero exit ok (for set -e) */
 #define XCOPROC BIT(9)		/* starting a co-process */
 #define XTIME	BIT(10)		/* timing TCOM command */
-
-/*
- * flags to control expansion of words (assumed by t->evalflags to fit
- * in a short)
- */
-#define	DOBLANK	BIT(0)		/* perform blank interpretation */
-#define	DOGLOB	BIT(1)		/* expand [?* */
-#define	DOPAT	BIT(2)		/* quote *?[ */
-#define	DOTILDE	BIT(3)		/* normal ~ expansion (first char) */
-#define DONTRUNCOMMAND BIT(4)	/* do not run $(command) things */
-#define DOASNTILDE BIT(5)	/* assignment ~ expansion (after =, :) */
-#define DOBRACE_ BIT(6)		/* used by expand(): do brace expansion */
-#define DOMAGIC_ BIT(7)		/* used by expand(): string contains MAGIC */
-#define DOTEMP_	BIT(8)		/* ditto : in word part of ${..[%#=?]..} */
-#define DOVACHECK BIT(9)	/* var assign check (for typeset, set, etc) */
-#define DOMARKDIRS BIT(10)	/* force markdirs behaviour */
 
 /*
  * The arguments of [[ .. ]] expressions are kept in t->args[] and flags

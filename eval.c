@@ -16,6 +16,7 @@
 #include <unistd.h>
 
 #include "sh.h"
+#include "ascii.h"
 
 /*
  * string expansion
@@ -36,36 +37,40 @@ typedef struct Expand {
 	short	split;		/* split "$@" / call waitlast $() */
 } Expand;
 
-#define	XBASE		0	/* scanning original */
-#define	XSUB		1	/* expanding ${} string */
-#define	XARGSEP		2	/* ifs0 between "$*" */
-#define	XARG		3	/* expanding $*, $@ */
-#define	XCOM		4	/* expanding $() */
-#define XNULLSUB	5	/* "$@" when $# is 0 (don't generate word) */
-#define XSUBMID		6	/* middle of expanding ${} */
+typedef enum xtype {
+	XBASE		= 0,	/* scanning original */
+	XSUB		= 1,	/* expanding ${} string */
+	XARGSEP		= 2,	/* ifs0 between "$*" */
+	XARG		= 3,	/* expanding $*, $@ */
+	XCOM		= 4,	/* expanding $() */
+	XNULLSUB	= 5,	/* "$@" when $# is 0 (don't generate word) */
+	XSUBMID		= 6,	/* middle of expanding ${} */
+} xtype_t;
 
 /* States used for field splitting */
-#define IFS_WORD	0	/* word has chars (or quotes) */
-#define IFS_WS		1	/* have seen IFS white-space */
-#define IFS_NWS		2	/* have seen IFS non-white-space */
-#define IFS_IWS		3	/* beginning of word, ignore IFS white-space */
-#define IFS_QUOTE	4	/* beg.w/quote, becomes IFS_WORD unless "$@" */
+typedef enum tword {
+	IFS_WORD	= 0,	/* word has chars (or quotes) */
+	IFS_WS		= 1,	/* have seen IFS white-space */
+	IFS_NWS		= 2,	/* have seen IFS non-white-space */
+	IFS_IWS		= 3,	/* beginning of word, ignore IFS white-space */
+	IFS_QUOTE	= 4,	/* beg.w/quote, becomes IFS_WORD unless "$@" */
+} tword_t;
 
-static	int	varsub(Expand *, char *, char *, int *, int *);
-static	int	comsub(Expand *, char *);
+static	int	varsub(Expand *, const char *, const char *, int *, int *);
+static	int	comsub(Expand *, const char *);
 static	char   *trimsub(char *, char *, int);
-static	void	glob(char *, XPtrV *, int);
+static	void	glob(char *, XPtrV *, eflags_t);
 static	void	globit(XString *, char **, char *, XPtrV *, int);
-static char	*maybe_expand_tilde(char *, XString *, char **, int);
+static const char *maybe_expand_tilde(const char *, XString *, char **, int);
 static	char   *tilde(char *);
 static	char   *homedir(char *);
-static void	alt_expand(XPtrV *, char *, char *, char *, int);
+static void	alt_expand(XPtrV *, char *, char *, char *, eflags_t);
 
 static struct tbl *varcpy(struct tbl *);
 
 /* compile and expand word */
 char *
-substitute(const char *cp, int f)
+substitute(const char *cp, eflags_t f)
 {
 	struct source *s, *sold;
 
@@ -87,7 +92,7 @@ substitute(const char *cp, int f)
  * expand arg-list
  */
 char **
-eval(char **ap, int f)
+eval(char **ap, eflags_t f)
 {
 	XPtrV w;
 
@@ -105,7 +110,7 @@ eval(char **ap, int f)
  * expand string
  */
 char *
-evalstr(char *cp, int f)
+evalstr(char *cp, eflags_t f)
 {
 	XPtrV w;
 
@@ -121,7 +126,7 @@ evalstr(char *cp, int f)
  * used from iosetup to expand redirection files
  */
 char *
-evalonestr(char *cp, int f)
+evalonestr(char *cp, eflags_t f)
 {
 	XPtrV w;
 
@@ -154,16 +159,19 @@ typedef struct SubType {
 } SubType;
 
 void
-expand(char *cp,	/* input word */
+expand(const char *cp,	/* input word */
     XPtrV *wp,		/* output words */
-    int f)		/* DO* flags */
+    eflags_t f)		/* DO* flags */
 {
-	int c = 0;
-	int type;		/* expansion type */
+	ascii_t c = 0;
+	pcode_t d;
+	xtype_t type;		/* expansion type */
 	int quote = 0;		/* quoted */
 	XString ds;		/* destination string */
-	char *dp, *sp;		/* dest., source */
-	int fdo, word;		/* second pass flags; have word */
+	char *dp;		/* dest */
+	const char *sp;		/* source */
+	eflags_t fdo;		/* second pass flags */
+	tword_t word;		/* have word */
 	int doblank;		/* field splitting of parameter/command subst */
 	Expand x = {
 		/* expansion variables */
@@ -207,8 +215,8 @@ expand(char *cp,	/* input word */
 
 		switch (type) {
 		case XBASE:	/* original prefixed string */
-			c = *sp++;
-			switch (c) {
+			d = *sp++;
+			switch (d) {
 			case EOS:
 				c = 0;
 				break;
@@ -288,7 +296,7 @@ expand(char *cp,	/* input word */
 			   * This is where all syntax checking gets done...
 			   */
 			    {
-				char *varname = ++sp; /* skip the { or x (}) */
+				const char *varname = ++sp; /* skip the { or x (}) */
 				int stype;
 				int slen = 0;
 
@@ -689,7 +697,8 @@ expand(char *cp,	/* input word */
 					if (type == XBASE &&
 					    (f & (DOTILDE|DOASNTILDE)) &&
 					    (tilde_ok & 2)) {
-						char *p, *dp_x;
+						const char *p;
+						char *dp_x;
 
 						dp_x = dp;
 						p = maybe_expand_tilde(sp,
@@ -703,6 +712,8 @@ expand(char *cp,	/* input word */
 							continue;
 						}
 					}
+					break;
+				default:
 					break;
 				}
 			else
@@ -734,7 +745,7 @@ done:
  * Prepare to generate the string returned by ${} substitution.
  */
 static int
-varsub(Expand *xp, char *sp, char *word,
+varsub(Expand *xp, const char *sp, const char *word,
     int *stypep,	/* becomes qualifier type */
     int *slenp)		/* " " len (=, :=, etc.) valid iff *stypep != 0 */
 {
@@ -882,7 +893,7 @@ varsub(Expand *xp, char *sp, char *word,
  * Run the command in $(...) and read its output.
  */
 static int
-comsub(Expand *xp, char *cp)
+comsub(Expand *xp, const char *cp)
 {
 	Source *s, *sold;
 	struct op *t;
@@ -986,7 +997,7 @@ trimsub(char *str, char *pat, int how)
 
 /* XXX cp not const 'cause slashes are temporarily replaced with nulls... */
 static void
-glob(char *cp, XPtrV *wp, int markdirs)
+glob(char *cp, XPtrV *wp, eflags_t markdirs)
 {
 	int oldsize = XPsize(*wp);
 
@@ -1176,12 +1187,13 @@ debunk(char *dp, const char *sp, size_t dlen)
  * puts the expanded version in *dcp,dp and returns a pointer in p just
  * past the name, otherwise returns 0.
  */
-static char *
-maybe_expand_tilde(char *p, XString *dsp, char **dpp, int isassign)
+static const char *
+maybe_expand_tilde(const char *p, XString *dsp, char **dpp, int isassign)
 {
 	XString ts;
 	char *dp = *dpp;
-	char *tp, *r;
+	char *tp;
+	const char *r;
 
 	Xinit(ts, tp, 16, ATEMP);
 	/* : only for DOASNTILDE form */
@@ -1259,7 +1271,7 @@ homedir(char *name)
 }
 
 static void
-alt_expand(XPtrV *wp, char *start, char *exp_start, char *end, int fdo)
+alt_expand(XPtrV *wp, char *start, char *exp_start, char *end, eflags_t fdo)
 {
 	int count = 0;
 	char *brace_start, *brace_end, *comma = NULL;

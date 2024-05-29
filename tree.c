@@ -492,9 +492,10 @@ char *
 wdscan(const char *wp, int c)
 {
 	int nest = 0;
+	pcode_t d;
 
 	while (1)
-		switch (*wp++) {
+		switch ((d = *wp++)) {
 		case EOS:
 			return (char *) wp;
 		case CHAR:
