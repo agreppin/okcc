@@ -78,7 +78,7 @@ typedef enum {
 /* keybindings */
 struct kb_entry {
 	TAILQ_ENTRY(kb_entry)	entry;
-	unsigned char		*seq;
+	char			*seq;
 	int			len;
 	struct x_ftab		*ftab;
 	void			*args;
@@ -478,6 +478,7 @@ static int
 x_del_back(int c)
 {
 	int col = xcp - xbuf;
+	UNUSED(c);
 
 	if (col == 0) {
 		x_e_putc(BEL);
@@ -496,6 +497,7 @@ static int
 x_del_char(int c)
 {
 	int nleft = xep - xcp;
+	UNUSED(c);
 
 	if (!nleft) {
 		x_e_putc(BEL);
@@ -568,6 +570,7 @@ x_delete(int nc, int push)
 static int
 x_del_bword(int c)
 {
+	UNUSED(c);
 	x_delete(x_bword(), true);
 	return KSTD;
 }
@@ -575,6 +578,7 @@ x_del_bword(int c)
 static int
 x_mv_bword(int c)
 {
+	UNUSED(c);
 	(void)x_bword();
 	return KSTD;
 }
@@ -582,6 +586,7 @@ x_mv_bword(int c)
 static int
 x_mv_fword(int c)
 {
+	UNUSED(c);
 	x_goto(xcp + x_fword());
 	return KSTD;
 }
@@ -589,6 +594,7 @@ x_mv_fword(int c)
 static int
 x_del_fword(int c)
 {
+	UNUSED(c);
 	x_delete(x_fword(), true);
 	return KSTD;
 }
@@ -719,6 +725,7 @@ static int
 x_mv_back(int c)
 {
 	int col = xcp - xbuf;
+	UNUSED(c);
 
 	if (col == 0) {
 		x_e_putc(BEL);
@@ -736,6 +743,7 @@ static int
 x_mv_forw(int c)
 {
 	int nleft = xep - xcp;
+	UNUSED(c);
 
 	if (!nleft) {
 		x_e_putc(BEL);
@@ -792,6 +800,7 @@ x_search_char_back(int c)
 static int
 x_newline(int c)
 {
+	UNUSED(c);
 	x_e_putc('\r');
 	x_e_putc('\n');
 	x_flush();
@@ -802,6 +811,7 @@ x_newline(int c)
 static int
 x_end_of_text(int c)
 {
+	UNUSED(c);
 	x_zotc(edchars.eof);
 	x_putc('\r');
 	x_putc('\n');
@@ -809,13 +819,13 @@ x_end_of_text(int c)
 	return KEOL;
 }
 
-static int x_beg_hist(int c) { x_load_hist(history); return KSTD;}
+static int x_beg_hist(int c) { UNUSED(c); x_load_hist(history); return KSTD;}
 
-static int x_end_hist(int c) { x_load_hist(histptr); return KSTD;}
+static int x_end_hist(int c) { UNUSED(c); x_load_hist(histptr); return KSTD;}
 
-static int x_prev_com(int c) { x_load_hist(x_histp - x_arg); return KSTD;}
+static int x_prev_com(int c) { UNUSED(c); x_load_hist(x_histp - x_arg); return KSTD;}
 
-static int x_next_com(int c) { x_load_hist(x_histp + x_arg); return KSTD;}
+static int x_next_com(int c) { UNUSED(c); x_load_hist(x_histp + x_arg); return KSTD;}
 
 /* Goto a particular history number obtained from argument.
  * If no argument is given history 1 is probably not what you
@@ -824,6 +834,7 @@ static int x_next_com(int c) { x_load_hist(x_histp + x_arg); return KSTD;}
 static int
 x_goto_hist(int c)
 {
+	UNUSED(c);
 	if (x_arg_defaulted)
 		x_load_hist(history);
 	else
@@ -984,6 +995,7 @@ static int
 x_del_line(int c)
 {
 	int	i, j;
+	UNUSED(c);
 
 	*xep = 0;
 	i = xep - xbuf;
@@ -1001,6 +1013,7 @@ x_del_line(int c)
 static int
 x_mv_end(int c)
 {
+	UNUSED(c);
 	x_goto(xep);
 	return KSTD;
 }
@@ -1008,6 +1021,7 @@ x_mv_end(int c)
 static int
 x_mv_begin(int c)
 {
+	UNUSED(c);
 	x_goto(xbuf);
 	return KSTD;
 }
@@ -1015,6 +1029,7 @@ x_mv_begin(int c)
 static int
 x_draw_line(int c)
 {
+	UNUSED(c);
 	x_redraw(-1);
 	return KSTD;
 }
@@ -1022,6 +1037,7 @@ x_draw_line(int c)
 static int
 x_clear_screen(int c)
 {
+	UNUSED(c);
 	x_redraw(-2);
 	return KSTD;
 }
@@ -1107,6 +1123,7 @@ static int
 x_transpose(int c)
 {
 	char	tmp;
+	UNUSED(c);
 
 	/* What transpose is meant to do seems to be up for debate. This
 	 * is a general summary of the options; the text is abcd with the
@@ -1158,6 +1175,7 @@ x_transpose(int c)
 static int
 x_literal(int c)
 {
+	UNUSED(c);
 	x_literal_set = 1;
 	return KSTD;
 }
@@ -1168,6 +1186,7 @@ x_kill(int c)
 	int col = xcp - xbuf;
 	int lastcol = xep - xbuf;
 	int ndel;
+	UNUSED(c);
 
 	if (x_arg_defaulted)
 		x_arg = lastcol;
@@ -1196,6 +1215,7 @@ x_push(int nchars)
 static int
 x_yank(int c)
 {
+	UNUSED(c);
 	if (killsp == 0)
 		killtp = KILLSIZE;
 	else
@@ -1215,6 +1235,7 @@ static int
 x_meta_yank(int c)
 {
 	int	len;
+	UNUSED(c);
 	if ((x_last_command != x_yank && x_last_command != x_meta_yank) ||
 	    killstack[killtp] == 0) {
 		killtp = killsp;
@@ -1238,6 +1259,7 @@ x_meta_yank(int c)
 static int
 x_abort(int c)
 {
+	UNUSED(c);
 	/* x_zotc(c); */
 	xlp = xep = xcp = xbp = xbuf;
 	xlp_valid = true;
@@ -1248,6 +1270,7 @@ x_abort(int c)
 static int
 x_error(int c)
 {
+	UNUSED(c);
 	x_e_putc(BEL);
 	return KSTD;
 }
@@ -1343,7 +1366,7 @@ kb_add_string(kb_func func, void *args, char *str)
 	count = strlen(str);
 
 	k = alloc(sizeof *k + count + 1, AEDIT);
-	k->seq = (unsigned char *)(k + 1);
+	k->seq = (char *)(k + 1);
 	k->len = count;
 	k->ftab = xf;
 	k->args = args ? strdup(args) : NULL;
@@ -1611,6 +1634,7 @@ x_emacs_keys(X_chars *ec)
 static int
 x_set_mark(int c)
 {
+	UNUSED(c);
 	xmp = xcp;
 	return KSTD;
 }
@@ -1620,6 +1644,7 @@ x_kill_region(int c)
 {
 	int	rsize;
 	char	*xr;
+	UNUSED(c);
 
 	if (xmp == NULL) {
 		x_e_putc(BEL);
@@ -1642,6 +1667,7 @@ static int
 x_xchg_point_mark(int c)
 {
 	char	*tmp;
+	UNUSED(c);
 
 	if (xmp == NULL) {
 		x_e_putc(BEL);
@@ -1656,6 +1682,7 @@ x_xchg_point_mark(int c)
 static int
 x_noop(int c)
 {
+	UNUSED(c);
 	return KSTD;
 }
 
@@ -1666,42 +1693,49 @@ x_noop(int c)
 static int
 x_comp_comm(int c)
 {
+	UNUSED(c);
 	do_complete(XCF_COMMAND, CT_COMPLETE);
 	return KSTD;
 }
 static int
 x_list_comm(int c)
 {
+	UNUSED(c);
 	do_complete(XCF_COMMAND, CT_LIST);
 	return KSTD;
 }
 static int
 x_complete(int c)
 {
+	UNUSED(c);
 	do_complete(XCF_COMMAND_FILE, CT_COMPLETE);
 	return KSTD;
 }
 static int
 x_enumerate(int c)
 {
+	UNUSED(c);
 	do_complete(XCF_COMMAND_FILE, CT_LIST);
 	return KSTD;
 }
 static int
 x_comp_file(int c)
 {
+	UNUSED(c);
 	do_complete(XCF_FILE, CT_COMPLETE);
 	return KSTD;
 }
 static int
 x_list_file(int c)
 {
+	UNUSED(c);
 	do_complete(XCF_FILE, CT_LIST);
 	return KSTD;
 }
 static int
 x_comp_list(int c)
 {
+	UNUSED(c);
 	do_complete(XCF_COMMAND_FILE, CT_COMPLIST);
 	return KSTD;
 }
@@ -1713,6 +1747,7 @@ x_expand(int c)
 	int start, end;
 	int is_command;
 	int i;
+	UNUSED(c);
 
 	nwords = x_cf_glob(XCF_FILE, xbuf, xep - xbuf, xcp - xbuf,
 	    &start, &end, &words, &is_command);
@@ -1981,6 +2016,7 @@ x_comment(int c)
 	int oldsize = x_size_str(xbuf);
 	int len = xep - xbuf;
 	int ret = x_do_comment(xbuf, xend - xbuf, &len);
+	UNUSED(c);
 
 	if (ret < 0)
 		x_e_putc(BEL);
@@ -2060,6 +2096,7 @@ x_prev_histword(int c)
 static int
 x_fold_upper(int c)
 {
+	UNUSED(c);
 	return x_fold_case('U');
 }
 
@@ -2067,6 +2104,7 @@ x_fold_upper(int c)
 static int
 x_fold_lower(int c)
 {
+	UNUSED(c);
 	return x_fold_case('L');
 }
 
@@ -2074,6 +2112,7 @@ x_fold_lower(int c)
 static int
 x_fold_capitalize(int c)
 {
+	UNUSED(c);
 	return x_fold_case('C');
 }
 

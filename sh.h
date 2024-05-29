@@ -19,6 +19,7 @@
 
 /* end of common headers */
 
+#define	UNUSED(x) (void)(x)
 #define	NELEM(a) (sizeof(a) / sizeof((a)[0]))
 #define	BIT(i)	(1<<(i))	/* define bit in flag */
 

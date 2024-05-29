@@ -81,6 +81,7 @@ static void
 alarm_catcher(int sig)
 {
 	int errno_ = errno;
+	UNUSED(sig);
 
 	if (ksh_tmout_state == TMOUT_READING) {
 		int left = alarm(0);

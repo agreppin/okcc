@@ -713,6 +713,12 @@ do_gmatch(const unsigned char *s, const unsigned char *se,
 	return s == se;
 }
 
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-sign"
+#endif
+
 static int
 posix_cclass(const unsigned char *pattern, int test, const unsigned char **ep)
 {
@@ -754,7 +760,7 @@ cclass(const unsigned char *p, int sub)
 		if ((p[0] == MAGIC && p[1] == '[' && p[2] == ':') ||
 		    (p[0] == '[' && p[1] == ':')) {
 			do {
-				const char *pp = p + (*p == MAGIC) + 2;
+				const unsigned char *pp = p + (*p == MAGIC) + 2;
 				rv = posix_cclass(pp, sub, &p);
 				switch (rv) {
 				case 1:
@@ -801,6 +807,10 @@ cclass(const unsigned char *p, int sub)
 
 	return (found != not) ? p+2 : NULL;
 }
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 /* Look for next ) or | (if match_sep) in *(foo|bar) pattern */
 const unsigned char *

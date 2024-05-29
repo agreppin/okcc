@@ -606,6 +606,9 @@ c_brkcont(char **wp)
 
 	unwind(*wp[0] == 'b' ? LBREAK : LCONTIN);
 	/* NOTREACHED */
+#ifdef __COMPCERT__
+	return 1; /* avoid ccomp warning ... */
+#endif
 }
 
 int
@@ -713,6 +716,7 @@ int
 c_times(char **wp)
 {
 	struct rusage usage;
+	UNUSED(wp);
 
 	(void) getrusage(RUSAGE_SELF, &usage);
 	p_tv(shl_stdout, 0, &usage.ru_utime, 0, NULL, " ");
@@ -833,6 +837,7 @@ int
 c_exec(char **wp)
 {
 	int i;
+	UNUSED(wp);
 
 	/* make sure redirects stay in place */
 	if (genv->savefd != NULL) {
@@ -877,6 +882,7 @@ c_suspend(char **wp)
 int
 c_builtin(char **wp)
 {
+	UNUSED(wp);
 	return 0;
 }
 

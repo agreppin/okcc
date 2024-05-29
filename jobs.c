@@ -1137,6 +1137,7 @@ j_sigchld(int sig)
 	int		pid;
 	int		status;
 	struct rusage	ru0, ru1;
+	UNUSED(sig);
 
 	/* Don't wait for any processes if a job is partially started.
 	 * This is so we don't do away with the process group leader

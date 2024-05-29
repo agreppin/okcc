@@ -144,10 +144,10 @@ done:
 
 /*
  * strvis, strnvis, strvisx - visually encode characters from src into dst
- *	
+ *
  *	Dst must be 4 times the size of src to account for possible
  *	expansion.  The length of dst, not including the trailing NULL,
- *	is returned. 
+ *	is returned.
  *
  *	Strnvis will write no more than siz-1 bytes (and will NULL terminate).
  *	The number of bytes needed to fully encode the string is returned.
@@ -166,6 +166,10 @@ estrvis(char *dst, const char *src, int flag)
 	*dst = '\0';
 	return (dst - start);
 }
+
+#ifdef __GNUC__ /* realloc does not free buf on error ? */
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+#endif
 
 int
 stravis(char **outp, const char *src, int flag)

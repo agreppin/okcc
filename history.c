@@ -660,6 +660,7 @@ void
 histsave(int lno, const char *cmd, int dowrite)
 {
 	char		*c, *cp;
+	UNUSED(lno);
 
 	if (ignorespace && cmd[0] == ' ')
 		return;

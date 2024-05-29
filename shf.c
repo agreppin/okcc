@@ -836,6 +836,7 @@ shf_vfprintf(struct shf *shf, const char *fmt, va_list args)
 			flags &= ~(FL_LLONG | FL_SHORT);
 			flags |= FL_LONG;
 			/* aaahhh... */
+			/* FALLTHROUGH */
 		case 'd':
 		case 'i':
 		case 'o':
@@ -864,7 +865,7 @@ shf_vfprintf(struct shf *shf, const char *fmt, va_list args)
 				else
 					tmp = 0;
 				/* aaahhhh..... */
-
+				/* FALLTHROUGH */
 			case 'u':
 				do {
 					*--s = llnum % 10 + '0';

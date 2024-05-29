@@ -870,6 +870,8 @@ static const char *
 dbtestp_getopnd(Test_env *te, Test_op op, int do_eval)
 {
 	int c = tpeek(ARRAYVAR);
+	UNUSED(op);
+	UNUSED(do_eval);
 
 	if (c != LWORD)
 		return NULL;
@@ -884,6 +886,11 @@ static int
 dbtestp_eval(Test_env *te, Test_op op, const char *opnd1, const char *opnd2,
     int do_eval)
 {
+	UNUSED(te);
+	UNUSED(op);
+	UNUSED(opnd1);
+	UNUSED(opnd2);
+	UNUSED(do_eval);
 	return 1;
 }
 

@@ -182,6 +182,7 @@ test_isop(Test_env *te, Test_meta meta, const char *s)
 {
 	char sc1;
 	const struct t_op *otab;
+	UNUSED(te);
 
 	otab = meta == TM_UNOP ? u_ops : b_ops;
 	if (*s) {
@@ -319,6 +320,7 @@ test_eval(Test_env *te, Test_op op, const char *opnd1, const char *opnd2,
 				return v1 < v2;
 			}
 		}
+		/* FALLTHROUGH */
 	case TO_FILNT: /* -nt */
 		{
 			int s2;
@@ -517,6 +519,8 @@ ptest_isa(Test_env *te, Test_meta meta)
 static const char *
 ptest_getopnd(Test_env *te, Test_op op, int do_eval)
 {
+	UNUSED(op);
+	UNUSED(do_eval);
 	if (te->pos.wp >= te->wp_end)
 		return NULL;
 	return *te->pos.wp++;

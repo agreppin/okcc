@@ -297,7 +297,7 @@ expand(const char *cp,	/* input word */
 			   */
 			    {
 				const char *varname = ++sp; /* skip the { or x (}) */
-				int stype;
+				int stype = 0;
 				int slen = 0;
 
 				sp = strchr(sp, '\0') + 1; /* skip variable */
@@ -520,6 +520,7 @@ expand(const char *cp,	/* input word */
 		case XARGSEP:
 			type = XARG;
 			quote = 1;
+			/* FALLTHROUGH */
 		case XARG:
 			if ((c = *x.str++) == '\0') {
 				/* force null words to be created so

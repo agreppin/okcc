@@ -104,6 +104,7 @@ c_cd(char **wp)
 	 * so that if it's used, it will cause a dump
 	 */
 	xp = NULL;
+	UNUSED(xp);
 
 	cdpath = str_val(global("CDPATH"));
 	do {

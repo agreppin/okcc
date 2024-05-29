@@ -55,6 +55,7 @@ x_init(void)
 static void
 x_sigwinch(int sig)
 {
+	UNUSED(sig);
 	got_sigwinch = 1;
 }
 
@@ -423,6 +424,7 @@ x_file_glob(int flags, const char *str, int slen, char ***wordsp)
 	int nwords;
 	XPtrV w;
 	struct source *s, *sold;
+	UNUSED(flags);
 
 	if (slen < 0)
 		return 0;
@@ -652,6 +654,7 @@ x_try_array(const char *buf, int buflen, const char *want, int wantlen,
 	int cmdlen, n, i, slen;
 	char *name, *s;
 	struct tbl *v, *vp;
+	UNUSED(buflen);
 
 	*nwords = 0;
 	*words = NULL;

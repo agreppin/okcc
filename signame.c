@@ -146,7 +146,7 @@ oksh_sig2str(int sig)
 {
 	int i;
 
-	for (i = 0; i < sizeof(signame) / sizeof(*signame); i++) {
+	for (i = 0; i < (int)(sizeof(signame) / sizeof(*signame)); i++) {
 		if (signame[i].sig == sig)
 			return signame[i].name;
 	}

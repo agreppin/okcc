@@ -755,13 +755,14 @@ EOF
 }
 
 wflagcheck() {
-  if [ "x$cc" = "xkefir" ] ; then
-    return 0
-  fi
+  case "${cc}${1}" in
+  *'kefir-w')
+    return 0;;
+  esac
   cat << EOF > conftest.c
 int main(void){return 0;}
 EOF
-  $cc $cflags -w -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $cflags "$@" -o conftest.o -c conftest.c > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 1
@@ -1042,13 +1043,26 @@ else
   echo "yes"
 fi
 
-printf "checking for -w compiler flag... "
-wflagcheck
-if [ $? -eq 0 ] ; then
+printf "checking for -Wall compiler flag... "
+if wflagcheck -Wall; then
   echo "no"
+  printf "checking for -w compiler flag... "
+  if wflagcheck -w; then
+    echo "no"
+  else
+    cflags="$cflags -w"
+    echo "yes"
+  fi
 else
-  cflags="$cflags -w"
+  cflags="$cflags -Wall"
   echo "yes"
+  printf "checking for -Wextra compiler flag... "
+  if wflagcheck -Wextra; then
+    echo "no"
+  else
+    cflags="$cflags -Wextra"
+    echo "yes"
+  fi
 fi
 
 printf "checking for OS... "

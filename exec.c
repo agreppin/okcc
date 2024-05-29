@@ -384,6 +384,8 @@ execute(struct op *volatile t,
 			scriptexec(t, ap);
 		else
 			errorf("%s: %s", s, strerror(errno));
+	default:
+		break;
 	}
     Break:
 	exstat = rv;
