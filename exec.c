@@ -694,6 +694,7 @@ comexec(struct op *t, struct tbl *volatile tp, char **ap, volatile int flags,
 		texec.str = tp->val.s;
 		texec.args = ap;
 		rv = exchild(&texec, flags, xerrok, -1);
+	default: /* default is never hit as seen by gcov ... */
 		break;
 	}
   Leave:

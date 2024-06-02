@@ -56,8 +56,8 @@ typedef enum tword {
 	IFS_QUOTE	= 4,	/* beg.w/quote, becomes IFS_WORD unless "$@" */
 } tword_t;
 
-static	int	varsub(Expand *, const char *, const char *, int *, int *);
-static	int	comsub(Expand *, const char *);
+static	xtype_t	varsub(Expand *, const char *, const char *, int *, int *);
+static	xtype_t	comsub(Expand *, const char *);
 static	char   *trimsub(char *, char *, int);
 static	void	glob(char *, XPtrV *, eflags_t);
 static	void	globit(XString *, char **, char *, XPtrV *, int);
@@ -745,13 +745,13 @@ done:
 /*
  * Prepare to generate the string returned by ${} substitution.
  */
-static int
+static xtype_t
 varsub(Expand *xp, const char *sp, const char *word,
     int *stypep,	/* becomes qualifier type */
     int *slenp)		/* " " len (=, :=, etc.) valid iff *stypep != 0 */
 {
 	int c;
-	int state;	/* next state: XBASE, XARG, XSUB, XNULLSUB */
+	xtype_t state;	/* next state: XBASE, XARG, XSUB, XNULLSUB */
 	int stype;	/* substitution type */
 	int slen;
 	char *p;
@@ -893,7 +893,7 @@ varsub(Expand *xp, const char *sp, const char *word,
 /*
  * Run the command in $(...) and read its output.
  */
-static int
+static xtype_t
 comsub(Expand *xp, const char *cp)
 {
 	Source *s, *sold;

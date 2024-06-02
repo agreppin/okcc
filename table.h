@@ -12,9 +12,20 @@ struct table {
 	struct	tbl **tbls;	/* hashed table items */
 };
 
+/* command types */
+typedef enum cmdtype {
+	CNONE	= 0,		/* undefined */
+	CSHELL	= 1,		/* built-in */
+	CFUNC	= 2,		/* function */
+	CEXEC	= 4,		/* executable command */
+	CALIAS	= 5,		/* alias */
+	CKEYWD	= 6,		/* keyword */
+	CTALIAS	= 7,		/* tracked alias */
+} cmdtype_t;
+
 struct tbl {			/* table item */
 	int	flag;		/* flags */
-	int	type;		/* command type (see below), base (if INTEGER),
+	cmdtype_t type;		/* command type (see above), base (if INTEGER),
 				 * or offset from val.s of value (if EXPORT) */
 	Area	*areap;		/* area to allocate from */
 	union {
@@ -71,15 +82,6 @@ struct tbl {			/* table item */
  */
 #define USERATTRIB	(EXPORT|INTEGER|RDONLY|LJUST|RJUST|ZEROFIL\
 			 |LCASEV|UCASEV_AL|INT_U|INT_L)
-
-/* command types */
-#define	CNONE	0		/* undefined */
-#define	CSHELL	1		/* built-in */
-#define	CFUNC	2		/* function */
-#define	CEXEC	4		/* executable command */
-#define	CALIAS	5		/* alias */
-#define	CKEYWD	6		/* keyword */
-#define CTALIAS	7		/* tracked alias */
 
 /* Flags for findcom()/comexec() */
 #define FC_SPECBI	BIT(0)	/* special builtin */

@@ -6,7 +6,7 @@
 
 /* $From: tree.h,v 1.3 1994/05/31 13:34:34 michael Exp $ */
 
-/* Tree.type values */
+/* Tree.type values (struct op) */
 typedef enum ttype {
 	TEOF		= 0,
 	TCOM		= 1,	/* command */
