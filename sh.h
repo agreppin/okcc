@@ -20,7 +20,9 @@
 /* end of common headers */
 
 #define	UNUSED(x) (void)(x)
+#ifndef NELEM
 #define	NELEM(a) (sizeof(a) / sizeof((a)[0]))
+#endif
 #define	BIT(i)	(1<<(i))	/* define bit in flag */
 
 #define	NUFILE	32		/* Number of user-accessible files */

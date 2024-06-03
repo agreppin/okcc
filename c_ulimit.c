@@ -54,7 +54,7 @@ c_ulimit(char **wp)
 		{ "memory(kbytes)", RLIMIT_RSS, 1024, 'm' },
 		{ "nofiles(descriptors)", RLIMIT_NOFILE, 1, 'n' },
 		{ "processes", RLIMIT_NPROC, 1, 'p' },
-		{ NULL }
+		{ NULL, 0, 0, '\0' }
 	};
 	const char	*options = "HSat#f#c#d#s#l#m#n#p#";
 	int		how = SOFT | HARD;
