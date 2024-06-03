@@ -1,5 +1,12 @@
-oksh
-Makefile
-README
+/build/
+/okcc
+/okcc.html
+/oksh
+/okt?
+*.a
+*.gcda
+*.gcno
+*.gcov
 *.o
+Makefile
 pconfig.h
