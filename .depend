@@ -1,0 +1,61 @@
+build/okcc.o: okcc.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/main.o: main.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/okc1.o: okc1.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/okc2.o: okc2.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/alloc.o: alloc.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/c_ksh.o: c_ksh.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/c_sh.o: c_sh.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/c_test.o: c_test.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h c_test.h
+build/c_ulimit.o: c_ulimit.c sh.h config.h portable.h build/pconfig.h shf.h \
+ table.h tree.h expand.h lex.h
+build/edit.o: edit.c config.h portable.h build/pconfig.h sh.h shf.h table.h \
+ tree.h expand.h lex.h edit.h tty.h
+build/emacs.o: emacs.c config.h portable.h build/pconfig.h sys-queue.h sh.h \
+ shf.h table.h tree.h expand.h lex.h edit.h
+build/eval.o: eval.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h ascii.h
+build/exec.o: exec.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h c_test.h
+build/expr.o: expr.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/io.o: io.c sh.h config.h portable.h build/pconfig.h shf.h table.h tree.h \
+ expand.h lex.h
+build/issetugid.o: issetugid.c build/pconfig.h
+build/jobs.o: jobs.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h tty.h
+build/history.o: history.c sh.h config.h portable.h build/pconfig.h shf.h \
+ table.h tree.h expand.h lex.h vis.h
+build/lex.o: lex.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/misc.o: misc.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h charclass.h
+build/path.o: path.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/portable.o: portable.c portable.h build/pconfig.h asprintf.c confstr.c \
+ reallocarray.c signame.c strlcat.c strtonum.c unvis.c vis.h vis.c
+build/shf.o: shf.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/syn.o: syn.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h c_test.h
+build/table.o: table.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/trap.o: trap.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/tree.o: tree.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/tty.o: tty.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h tty.h
+build/var.o: var.c sh.h config.h portable.h build/pconfig.h shf.h table.h \
+ tree.h expand.h lex.h
+build/version.o: version.c sh.h config.h portable.h build/pconfig.h shf.h \
+ table.h tree.h expand.h lex.h
+build/vi.o: vi.c config.h portable.h build/pconfig.h sh.h shf.h table.h tree.h \
+ expand.h lex.h edit.h

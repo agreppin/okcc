@@ -1,0 +1,110 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "(gdb) okcc",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/usr/bin/env",
+      "args": ["-i", "HOME=${HOME:-/home/agreppin}",
+        "${workspaceFolder}/okcc", "okt5.sh"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}",
+      "environment": [ {
+        "name": "LD_LIBRARY_PATH",
+        "value": "${workspaceFolder}"
+      }],
+      "externalConsole": false,
+      "MIMode": "gdb",
+    },
+    {
+      "name": "(gdb) oksh",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/usr/bin/env",
+      "args": ["-i", "HOME=${HOME:-/home/agreppin}",
+        "${workspaceFolder}/oksh", "okt1.sh", "av1", "av2"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}",
+      "environment": [ {
+        "name": "LD_LIBRARY_PATH",
+        "value": "${workspaceFolder}"
+      }],
+      "externalConsole": false,
+      "MIMode": "gdb",
+    },
+    {
+      "name": "(gdb) okt1",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/usr/bin/env",
+      "args": ["-i", "HOME=${HOME:-/home/agreppin}",
+        "${workspaceFolder}/okt1", "av1", "av2"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}",
+      "environment": [ {
+        "name": "LD_LIBRARY_PATH",
+        "value": "${workspaceFolder}"
+      }],
+      "externalConsole": false,
+      "MIMode": "gdb",
+    },
+    {
+      "name": "(gdb) okt3",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/usr/bin/env",
+      "args": ["-i", "HOME=${HOME:-/home/agreppin}",
+        "${workspaceFolder}/okt3", "</dev/null"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}",
+      "environment": [ {
+        "name": "LD_LIBRARY_PATH",
+        "value": "${workspaceFolder}"
+      }],
+      "externalConsole": false,
+      "MIMode": "gdb",
+    },
+    {
+      "name": "(gdb) okt4",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/usr/bin/env",
+      "args": ["-i", "HOME=${HOME:-/home/agreppin}",
+        "${workspaceFolder}/okt4"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}",
+      "environment": [ {
+        "name": "LD_LIBRARY_PATH",
+        "value": "${workspaceFolder}"
+      }],
+      "externalConsole": false,
+      "MIMode": "gdb",
+    },
+    {
+      "name": "(gdb) okt5",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/usr/bin/env",
+      "args": ["-i", "HOME=${HOME:-/home/agreppin}",
+        "${workspaceFolder}/okt5", "abc", "\"def ghi\""
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}",
+      "environment": [ {
+        "name": "LD_LIBRARY_PATH",
+        "value": "${workspaceFolder}"
+      }],
+      "externalConsole": false,
+      "MIMode": "gdb",
+    }
+]
+}

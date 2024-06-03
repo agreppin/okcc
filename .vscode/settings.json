@@ -1,0 +1,25 @@
+{
+    "[c]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 8,
+    },
+    "[shellscript]": {
+        "editor.tabSize": 2,
+    },
+    "files.associations": {
+        "*.h": "c",
+        "random": "cpp",
+        "*.c": "c",
+        "*.sh": "shellscript",
+        ".depend": "makefile",
+        "*.mk": "makefile",
+        "*akefile*": "makefile",
+        "array": "c",
+        "compare": "c",
+        "functional": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "cstdlib": "c"
+    },
+}

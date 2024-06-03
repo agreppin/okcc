@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "${workspaceFolder}/build"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/build"
+            ],
+            "defines": [ "_GNU_SOURCE", "EMACS", "VI", "SMALL" ],
+            // "compilerPath": "/usr/bin/clang",
+            "cStandard": "c99",
+            "cppStandard": "c++17"
+            // "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}
