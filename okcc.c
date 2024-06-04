@@ -369,7 +369,7 @@ cc_execute(struct op *t) {
 	int rv = 0;
 
 	if (0)
-	 	execute(t, 0, NULL); // mimic it
+		execute(t, 0, NULL); // mimic it
 
 	switch (t->type) {
 	case TCOM: {
