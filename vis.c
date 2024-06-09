@@ -39,6 +39,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "sh.h"
 #include "vis.h"
 
 #define	isoctal(c)	(((u_char)(c)) >= '0' && ((u_char)(c)) <= '7')
@@ -167,7 +168,7 @@ estrvis(char *dst, const char *src, int flag)
 	return (dst - start);
 }
 
-#ifdef __GNUC__ /* realloc does not free buf on error ? */
+#if (__GNUC__+0) && !(__clang__+0) /* realloc does not free buf on error ? */
 #pragma GCC diagnostic ignored "-Wuse-after-free"
 #endif
 
@@ -177,11 +178,13 @@ stravis(char **outp, const char *src, int flag)
 	char *buf;
 	int len, serrno;
 
+	//buf = areallocarray(NULL, 4, strlen(src) + 1, APERM); // TODO
 	buf = reallocarray(NULL, 4, strlen(src) + 1);
 	if (buf == NULL)
 		return -1;
 	len = estrvis(buf, src, flag);
 	serrno = errno;
+	//*outp = aresize(buf, len + 1, APERM);
 	*outp = realloc(buf, len + 1);
 	if (*outp == NULL) {
 		*outp = buf;

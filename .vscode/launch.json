@@ -9,8 +9,8 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "/usr/bin/env",
-      "args": ["-i", "HOME=${HOME:-/home/agreppin}",
-        "${workspaceFolder}/okcc", "okt5.sh"
+      "args": ["-i", "HOME=${HOME:-~/}",
+        "${workspaceFolder}/okcc", "tests/okt4.sh"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}",
@@ -21,13 +21,65 @@
       "externalConsole": false,
       "MIMode": "gdb",
     },
+    { // CodeLLDB extension
+      "name": "(lldb) okcc",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/okcc",
+      "args": [
+        //"tests/okt4.sh"
+      ],
+      "cwd": "${workspaceRoot}",
+      "env": {
+        "LD_LIBRARY_PATH":"${workspaceFolder}",
+      },
+      "initCommands": [
+        "settings set target.inherit-env false",
+      ],
+      "stdio": [ "tests/okt4.sh", "build/okt4.c", null]
+    },
+    { // CodeLLDB extension
+      "name": "(lldb) okt4",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/okt4",
+      "args": ["-v"],
+      "cwd": "${workspaceRoot}",
+      "env": {
+        "LD_LIBRARY_PATH":"${workspaceFolder}",
+      },
+      "initCommands": [
+        "settings set target.inherit-env false",
+        "settings set target.env-vars HOME=${env:HOME}"
+      ],
+    },
+    { // CodeLLDB extension
+      "name": "(lldb) 004-exist",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/okcc",
+      "args": [],
+      "cwd": "${workspaceRoot}/../42ShellTester/tmp",
+      "env": {
+        "LD_LIBRARY_PATH":"${workspaceFolder}",
+        "GLOBAL_TOKEN":"TOKEN202406082105",
+        "TOKEN202406082105_NAME":"TOKEN202406082105_VALUE_OLD",
+      },
+      "initCommands": [
+        //"settings set target.inherit-env false",
+      ],
+      "stdio": [
+        "${workspaceFolder}/../42ShellTester/spec/42sh/local-variable/004-existing-variable-in-environment-1/stdin",
+        // "/dev/null"
+      ],
+    },
     {
       "name": "(gdb) oksh",
       "type": "cppdbg",
       "request": "launch",
       "program": "/usr/bin/env",
       "args": ["-i", "HOME=${HOME:-/home/agreppin}",
-        "${workspaceFolder}/oksh", "okt1.sh", "av1", "av2"
+        "${workspaceFolder}/oksh", "tests/okt4.sh", "av1", "av2"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}",
@@ -44,7 +96,24 @@
       "request": "launch",
       "program": "/usr/bin/env",
       "args": ["-i", "HOME=${HOME:-/home/agreppin}",
-        "${workspaceFolder}/okt1", "av1", "av2"
+        "${workspaceFolder}/build/okt1", "av1", "av2"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}",
+      "environment": [ {
+        "name": "LD_LIBRARY_PATH",
+        "value": "${workspaceFolder}"
+      }],
+      "externalConsole": false,
+      "MIMode": "gdb",
+    },
+    {
+      "name": "(gdb) okt2",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/usr/bin/env",
+      "args": ["-i", "HOME=${HOME:-/home/agreppin}",
+        "${workspaceFolder}/build/okt2", "av1", "av2"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}",
@@ -61,7 +130,7 @@
       "request": "launch",
       "program": "/usr/bin/env",
       "args": ["-i", "HOME=${HOME:-/home/agreppin}",
-        "${workspaceFolder}/okt3", "</dev/null"
+        "${workspaceFolder}/build/okt3", "</dev/null"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}",
@@ -78,7 +147,7 @@
       "request": "launch",
       "program": "/usr/bin/env",
       "args": ["-i", "HOME=${HOME:-/home/agreppin}",
-        "${workspaceFolder}/okt4"
+        "${workspaceFolder}/build/okt4"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}",
@@ -95,7 +164,7 @@
       "request": "launch",
       "program": "/usr/bin/env",
       "args": ["-i", "HOME=${HOME:-/home/agreppin}",
-        "${workspaceFolder}/okt5", "abc", "\"def ghi\""
+        "${workspaceFolder}/build/okt5", "abc", "\"def ghi\""
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}",

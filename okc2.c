@@ -153,6 +153,8 @@ cc_ioload(const char **xpp) {
 	return ioact;
 }
 
+extern struct op *newtp(ttype_t type);
+
 static struct op *
 cc_opload(const char **xpp) {
 	const char *xp = *xpp;
@@ -160,8 +162,9 @@ cc_opload(const char **xpp) {
 	int size;
 	xp = cc_load(xp, &size, sizeof(size));
 	if (size > 0) {
-		t = alloc(sizeof(*t), ATEMP);
-		xp = cc_load(xp, &t->type, sizeof(t->type));
+		ttype_t type;
+		xp = cc_load(xp, &type, sizeof(type));
+		t = newtp(type);
 		xp = cc_load(xp, &t->u, sizeof(t->u));
 		t->args = cc_wdload(&xp);
 		t->vars = cc_wdload(&xp);
@@ -171,6 +174,8 @@ cc_opload(const char **xpp) {
 		t->str = cc_strload(&xp, 1);
 		xp = cc_load(xp, &t->lineno, sizeof(t->lineno));
 	}
+	if (xp - *xpp != (ptrdiff_t)(size + sizeof(size)))
+		internal_errorf("%s", __func__);
 	*xpp = xp;
 	return t;
 }
@@ -181,6 +186,7 @@ cc_opload(const char **xpp) {
 int
 cc_shell(const char *bytecode, volatile int toplevel) {
 	const char *xp = bytecode;
+
 	struct op *t;
 //	volatile int wastty = s->flags & SF_TTY;
 //	volatile int attempts = 13;
@@ -189,7 +195,6 @@ cc_shell(const char *bytecode, volatile int toplevel) {
 	int i;
 
 	newenv(E_PARSE);
-//	newenv(E_EXEC); // AGR MOD TODO
 
 //	if (interactive)
 //		really_exit = 0;
@@ -278,6 +283,7 @@ cc_shell(const char *bytecode, volatile int toplevel) {
 		}
 
 //		if (t && (!Flag(FNOEXEC) || (s->flags & SF_TTY)))
+		if (!Flag(FNOEXEC))
 			exstat = execute(t, 0, NULL);
 
 //		if (t != NULL && t->type != TEOF && interactive && really_exit)
@@ -295,7 +301,7 @@ cc_shell(const char *bytecode, volatile int toplevel) {
 // Flag(FPRIVILEGED)	== 0
 // Flag(FRESTRICTED)	== 0
 int
-cc_main(int argc, char *argv[], char *envp[], const char *bytecode) {
+cc_main(int argc, char *argv[], char *envp[], const char *bytecode, const struct builtin *bi) {
 //	Source *s;
 	struct block *l;
 //	int restricted, errexit;
@@ -336,11 +342,22 @@ cc_main(int argc, char *argv[], char *envp[], const char *bytecode) {
 
 	/* define built-in commands */
 	ktinit(&builtins, APERM, 64); /* must be 2^n (currently 40 builtins) */
+#if 1
+	/* builtins needed by initcoms */
+	builtin("+alias", c_alias);
+	builtin("=typeset", c_typeset);
+
+	for (i = 0; shbuiltins[i].name != NULL; i++)
+		builtin(shbuiltins[i].name, shbuiltins[i].func);
+
+	for (i = 0; bi[i].name != NULL; i++)
+		builtin(bi[i].name, bi[i].func);
+#else
 	for (i = 0; shbuiltins[i].name != NULL; i++)
 		builtin(shbuiltins[i].name, shbuiltins[i].func);
 	for (i = 0; kshbuiltins[i].name != NULL; i++)
 		builtin(kshbuiltins[i].name, kshbuiltins[i].func);
-
+#endif
 	init_histvec();
 
 	def_path = _PATH_DEFPATH;
@@ -531,12 +548,11 @@ cc_main(int argc, char *argv[], char *envp[], const char *bytecode) {
 
 // 	if (Flag(FPRIVILEGED))
 // 		include("/etc/suid_profile", 0, NULL, 1);
+
 // 	else if (Flag(FTALKING)) {
 // 		char *env_file;
-
 // 		/* include $ENV */
 // 		env_file = str_val(global("ENV"));
-
 // #ifdef DEFAULT_ENV
 // 		/* If env isn't set, include default environment */
 // 		if (env_file == null)

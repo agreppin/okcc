@@ -202,107 +202,20 @@ c_pwd(char **wp)
 	return 0;
 }
 
-int
-c_print(char **wp)
+typedef enum poflags {
+	PO_NL		= BIT(0),	/* print newline */
+	PO_EXPAND	= BIT(1),	/* expand backslash sequences */
+	PO_PMINUSMINUS	= BIT(2),	/* print a -- argument */
+	PO_HIST		= BIT(3),	/* print to history instead of stdout */
+	PO_COPROC	= BIT(4),	/* printing to coprocess: block SIGPIPE */
+} poflags_t;
+
+static int
+c_print_(char **wp, int fd, poflags_t flags)
 {
-#define PO_NL		BIT(0)	/* print newline */
-#define PO_EXPAND	BIT(1)	/* expand backslash sequences */
-#define PO_PMINUSMINUS	BIT(2)	/* print a -- argument */
-#define PO_HIST		BIT(3)	/* print to history instead of stdout */
-#define PO_COPROC	BIT(4)	/* printing to coprocess: block SIGPIPE */
-	int fd = 1;
-	int flags = PO_EXPAND|PO_NL;
-	char *s;
-	const char *emsg;
 	XString xs;
 	char *xp;
-
-	if (wp[0][0] == 'e') {	/* echo command */
-		int nflags = flags;
-
-		/* A compromise between sysV and BSD echo commands:
-		 * escape sequences are enabled by default, and
-		 * -n, -e and -E are recognized if they appear
-		 * in arguments with no illegal options (ie, echo -nq
-		 * will print -nq).
-		 * Different from sysV echo since options are recognized,
-		 * different from BSD echo since escape sequences are enabled
-		 * by default.
-		 */
-		wp += 1;
-		if (Flag(FPOSIX)) {
-			if (*wp && strcmp(*wp, "-n") == 0) {
-				flags &= ~PO_NL;
-				wp++;
-			}
-		} else {
-			while ((s = *wp) && *s == '-' && s[1]) {
-				while (*++s)
-					if (*s == 'n')
-						nflags &= ~PO_NL;
-					else if (*s == 'e')
-						nflags |= PO_EXPAND;
-					else if (*s == 'E')
-						nflags &= ~PO_EXPAND;
-					else
-						/* bad option: don't use
-						 * nflags, print argument
-						 */
-						break;
-				if (*s)
-					break;
-				wp++;
-				flags = nflags;
-			}
-		}
-	} else {
-		int optc;
-		const char *options = "Rnprsu,";
-		while ((optc = ksh_getopt(wp, &builtin_opt, options)) != -1)
-			switch (optc) {
-			case 'R': /* fake BSD echo command */
-				flags |= PO_PMINUSMINUS;
-				flags &= ~PO_EXPAND;
-				options = "ne";
-				break;
-			case 'e':
-				flags |= PO_EXPAND;
-				break;
-			case 'n':
-				flags &= ~PO_NL;
-				break;
-			case 'p':
-				if ((fd = coproc_getfd(W_OK, &emsg)) < 0) {
-					bi_errorf("-p: %s", emsg);
-					return 1;
-				}
-				break;
-			case 'r':
-				flags &= ~PO_EXPAND;
-				break;
-			case 's':
-				flags |= PO_HIST;
-				break;
-			case 'u':
-				if (!*(s = builtin_opt.optarg))
-					fd = 0;
-				else if ((fd = check_fd(s, W_OK, &emsg)) < 0) {
-					bi_errorf("-u: %s: %s", s, emsg);
-					return 1;
-				}
-				break;
-			case '?':
-				return 1;
-			}
-		if (!(builtin_opt.info & GI_MINUSMINUS)) {
-			/* treat a lone - like -- */
-			if (wp[builtin_opt.optind] &&
-			    strcmp(wp[builtin_opt.optind], "-") == 0)
-				builtin_opt.optind++;
-		} else if (flags & PO_PMINUSMINUS)
-			builtin_opt.optind--;
-		wp += builtin_opt.optind;
-	}
+	char *s;
 
 	Xinit(xs, xp, 128, ATEMP);
 
@@ -401,6 +314,106 @@ c_print(char **wp)
 	}
 
 	return 0;
+}
+
+int
+c_echo(char **wp) {
+	poflags_t flags = PO_EXPAND|PO_NL;
+	char *s;
+
+	/* A compromise between sysV and BSD echo commands:
+		* escape sequences are enabled by default, and
+		* -n, -e and -E are recognized if they appear
+		* in arguments with no illegal options (ie, echo -nq
+		* will print -nq).
+		* Different from sysV echo since options are recognized,
+		* different from BSD echo since escape sequences are enabled
+		* by default.
+		*/
+	wp += 1;
+	if (Flag(FPOSIX)) {
+		if (*wp && strcmp(*wp, "-n") == 0) {
+			flags &= ~PO_NL;
+			wp++;
+		}
+	} else {
+		while ((s = *wp) && *s == '-' && s[1]) {
+			while (*++s)
+				if (*s == 'n')
+					flags &= ~PO_NL;
+				else if (*s == 'e')
+					flags |= PO_EXPAND;
+				else if (*s == 'E')
+					flags &= ~PO_EXPAND;
+				else
+					/* bad option: don't use
+						* nflags, print argument
+						*/
+					break;
+			if (*s)
+				break;
+			wp++;
+		}
+	}
+
+	return c_print_(wp, 1, flags);
+}
+
+int
+c_print(char **wp) {
+	poflags_t flags = PO_EXPAND|PO_NL;
+	const char *emsg;
+	int fd = 1;
+	char *s;
+
+	int optc;
+	const char *options = "Rnprsu,";
+	while ((optc = ksh_getopt(wp, &builtin_opt, options)) != -1)
+		switch (optc) {
+		case 'R': /* fake BSD echo command */
+			flags |= PO_PMINUSMINUS;
+			flags &= ~PO_EXPAND;
+			options = "ne";
+			break;
+		case 'e':
+			flags |= PO_EXPAND;
+			break;
+		case 'n':
+			flags &= ~PO_NL;
+			break;
+		case 'p':
+			if ((fd = coproc_getfd(W_OK, &emsg)) < 0) {
+				bi_errorf("-p: %s", emsg);
+				return 1;
+			}
+			break;
+		case 'r':
+			flags &= ~PO_EXPAND;
+			break;
+		case 's':
+			flags |= PO_HIST;
+			break;
+		case 'u':
+			if (!*(s = builtin_opt.optarg))
+				fd = 0;
+			else if ((fd = check_fd(s, W_OK, &emsg)) < 0) {
+				bi_errorf("-u: %s: %s", s, emsg);
+				return 1;
+			}
+			break;
+		case '?':
+			return 1;
+		}
+	if (!(builtin_opt.info & GI_MINUSMINUS)) {
+		/* treat a lone - like -- */
+		if (wp[builtin_opt.optind] &&
+			strcmp(wp[builtin_opt.optind], "-") == 0)
+			builtin_opt.optind++;
+	} else if (flags & PO_PMINUSMINUS)
+		builtin_opt.optind--;
+	wp += builtin_opt.optind;
+
+	return c_print_(wp, fd, flags);
 }
 
 int
@@ -1397,6 +1410,16 @@ c_bind(char **wp)
 }
 #endif
 
+/* TODO explain why it's needed, coverage ? */
+#if !(COV+0) && !(__COMPCERT__+0) && (__GNUC__+0) && 0
+#define _ALIAS(x, y) int __attribute__((/*weak,*/ alias(#x))) y(char **)
+_ALIAS(c_typeset, c_export);
+_ALIAS(c_typeset, c_readonly);
+#else
+int c_export(char **wp) { return c_typeset(wp); }
+int c_readonly(char **wp) { return c_typeset(wp); }
+#endif
+
 /* A leading = means assignments before command are kept;
  * a leading * means a POSIX special builtin;
  * a leading + means a POSIX regular builtin
@@ -1406,8 +1429,8 @@ const struct builtin kshbuiltins [] = {
 	{"+alias", c_alias},	/* no =: at&t manual wrong */
 	{"+cd", c_cd},
 	{"+command", c_command},
-	{"echo", c_print},
-	{"*=export", c_typeset},
+	{"echo", c_echo},
+	{"*=export", c_export},
 	{"+fc", c_fc},
 	{"+getopts", c_getopts},
 	{"+jobs", c_jobs},
@@ -1415,7 +1438,7 @@ const struct builtin kshbuiltins [] = {
 	{"let", c_let},
 	{"print", c_print},
 	{"pwd", c_pwd},
-	{"*=readonly", c_typeset},
+	{"*=readonly", c_readonly},
 	{"type", c_type},
 	{"=typeset", c_typeset},
 	{"+unalias", c_unalias},

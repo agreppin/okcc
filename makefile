@@ -1,59 +1,70 @@
 # makefile tested with bmake, gmake & pdpmake
+CC		:= clang -pipe
+CC0		!= echo $(CC) | cut -d' ' -f1
+CC0		?= $(word 1,$(CC))
 OS		!= uname -s
 OS		?= $(shell uname -s)# gmake 3.81 doesn't have !=
-GCOV		:= 0
-CFLAGS_GCOV1	:= -fprofile-arcs -ftest-coverage --coverage
-LDLIBS_GCOV1	:= -lgcov
+COV		:= 0
+#CFLAGS_COV1	:= -fprofile-arcs -ftest-coverage --coverage
+CFLAGS_COV1	:= --coverage
+LFLAGS_COV1	:= --coverage
 
 # common vars
-COPTS	:= -O0
-DFLAGS	:= -Ibuild -DEMACS -DVI -DSMALL
-LDLIBS	:= -lokcc
+COPTS		:= -O0
+DFLAGS		:= -Ibuild -DEMACS -DVI -DSMALL -DCOV=$(COV)
+LDLIBS		:= -lokcc
 
 # os specific CPPFLAGS
-DFLAGS_AIX	:= -D_ALL_SOURCE	# untested
-DFLAGS_OS400	:= -D_ALL_SOURCE	# untested
-DFLAGS_Linux	:= -D_GNU_SOURCE	# setresgid
-DFLAGS_NetBSD	:= -D_OPENBSD_SOURCE	# strtonum
+DFLAGS_AIX	:= -D_ALL_SOURCE# untested
+DFLAGS_OS400	:= -D_ALL_SOURCE# untested
+DFLAGS_Linux	:= -D_GNU_SOURCE# setresgid, strsignal
+DFLAGS_NetBSD	:= -D_OPENBSD_SOURCE# strtonum
 # _DEFAULT_SOURCE: DragonFly, FreeBSD, OpenBSD
-DFLAGS_any	:= -D_DEFAULT_SOURCE
+DFLAGS_cc	:= -D_DEFAULT_SOURCE
 # assume cc is gcc or clang
 FFLAGS_cc	:= -ffunction-sections -fdata-sections
 WFLAGS_cc	:= -Wall -Wextra# -pedantic
 CFLAGS_cc	:= -g3 $(COPTS) -fPIC $(WFLAGS_cc) $(FFLAGS_cc)
-LDFLAGS_cc	:= -g3 -L. -Wl,--gc-sections
+LFLAGS_cc	:= -g3 -L. -Wl,--gc-sections
 # macos c99 ?
 CFLAGS_c99	:= -g $(COPTS)
-LDFLAGS_c99	:= -g -L.
+LFLAGS_c99	:= -g -L.
 # compcert: avoid warning in glibc headers
 FFLAGS_ccomp	:= -Wall -Wno-c11-extensions -Wno-zero-length-array
 CFLAGS_ccomp	:= -g3 $(COPTS) -std=c99 $(FFLAGS_ccomp)
-LDFLAGS_ccomp	:= -g3 -L. -Wl,-znoexecstack
+LFLAGS_ccomp	:= -g3 -L. -Wl,-znoexecstack
 # tinyc
-AR_tcc		:= $(CC) -ar
+AR_tcc		:= $(CC0) -ar
 CFLAGS_tcc	:= -g $(COPTS) -Wall
-LDFLAGS_tcc	:= -g -L.
+LFLAGS_tcc	:= -g -L.
 
-LDFLAGS_Darwin	:= -g3 -L. -Wl,-dead_strip
+COV_clang	:= 'llvm-cov gcov'
+COV_Darwin	:= 'llvm-cov gcov' # TODO Darwin ?
+LFLAGS_Darwin	:= -g3 -L. -Wl,-dead_strip
 
 # expand vars
-CFLAGS_$(CC)	?= $(CFLAGS_cc)
-DFLAGS_$(OS)	?= $(DFLAGS_any)
-LDFLAGS_$(CC)	?= $(LDFLAGS_cc)
+CFLAGS_$(CC0)	?= $(CFLAGS_cc)
+DFLAGS_$(CC0)	?= $(DFLAGS_cc)
+LFLAGS_$(CC0)	?= $(LFLAGS_cc)
 
-CFLAGS_$(OS)	?= $(CFLAGS_$(CC))
-LDFLAGS_$(OS)	?= $(LDFLAGS_$(CC))
+CFLAGS_$(OS)	?= $(CFLAGS_$(CC0))
+DFLAGS_$(OS)	?= $(DFLAGS_$(CC0))
+LFLAGS_$(OS)	?= $(LFLAGS_$(CC0))
 
-AR_$(CC)	?= $(AR)
+AR_$(CC0)	?= $(AR)
+COV_$(CC0)	?= gcov
 XCFLAGS		?= $(CFLAGS_$(OS))
-XLDFLAGS	?= $(LDFLAGS_$(OS))
+XDFLAGS		?= $(DFLAGS_$(OS))
+XLFLAGS		?= $(LFLAGS_$(OS))
 
-AR		:= $(AR_$(CC))
-CFLAGS		:= $(XCFLAGS) $(CFLAGS_GCOV$(GCOV))
-CPPFLAGS	:= $(DFLAGS) $(DFLAGS_$(OS))
-LDFLAGS		:= $(XLDFLAGS)
-LDLIBS		+= $(LDLIBS_GCOV$(GCOV))
+AR		:= $(AR_$(CC0))
+COV_EXE		:= $(COV_$(CC0))
 
+CFLAGS		:= $(XCFLAGS) $(CFLAGS_COV$(COV))
+CPPFLAGS	:= $(XDFLAGS) $(DFLAGS)
+LDFLAGS		:= $(XLFLAGS) $(LFLAGS_COV$(COV))
+
+# build targets
 SLIB	:= libokcc.a
 TESTS	:= okt1 okt2 okt3 okt4 okt5
 
@@ -68,12 +79,12 @@ LIBOBJS	:= $(LIBSRCS:%.c=build/%.o)
 
 all: .depend okcc oksh
 
-test: .depend okcc $(TESTS)
-	./okt1 av1 av2
-	./okt2 av1 av2
-	./okt3 < /dev/null
-	./okt4
-	./okt5 a 'b c'
+test: .depend okcc $(TESTS:%=build/%)
+	./build/okt1 av1 av2
+	./build/okt2 av1 av2
+	./build/okt3 < /dev/null
+	./build/okt4
+	./build/okt5 a 'b c'
 
 info:
 	:       CC: $(CC)
@@ -82,6 +93,7 @@ info:
 	:  LDFLAGS: $(LDFLAGS)
 	:   LDLIBS: $(LDLIBS)
 	:       AR: $(AR)
+	:  COV_EXE: $(COV_EXE)
 	:       OS: $(OS)
 
 okcc-objs := build/okcc.o
@@ -93,14 +105,27 @@ oksh: $(oksh-objs) $(SLIB)
 	: CCLD $@
 	@$(CC) $(LDFLAGS) -o $@ $(oksh-objs) $(LDLIBS)
 
-$(TESTS): okcc $(@:%=tests/%.sh)
-	./okcc $(@:%=tests/%.sh) > $(@:%=build/%.c)
+.DELETE_ON_ERROR:
+CFLAGS_TEST := -g -O0
+$(TESTS:%=build/%.c): $(@:build/%.c=tests/%.sh) okcc
+	./okcc $(@:build/%.c=tests/%.sh) > $@
+$(TESTS:%=build/%): $(@:%=%.c) okcc
 	: CCLD $@
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $(@:%=build/%.c) $(LDFLAGS) $(LDLIBS)
+	@$(CC) $(CFLAGS_TEST) $(CPPFLAGS) -o $@ $(@:%=%.c) $(LDFLAGS) $(LDLIBS)
 
-okt2: tests/okt2.sh
+build/okt1.c: tests/okt1.sh
+build/okt2.c: tests/okt2.sh
+build/okt3.c: tests/okt3.sh
+build/okt4.c: tests/okt4.sh
+build/okt4.c: tests/okt4.sh
+build/okt5.c: tests/okt5.sh
+build/okt1: build/okt1.c
+build/okt2: build/okt2.c
+build/okt3: build/okt3.c
+build/okt4: build/okt4.c
+build/okt5: build/okt5.c
 
-$(OBJS) $(LIBOBJS): $(@:build/%.o=%.c)
+$(OBJS) $(LIBOBJS): $(@:build/%.o=%.c) build/pconfig.h
 	: CC $(@:build/%.o=%.c)
 	@$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c $(@:build/%.o=%.c)
 
@@ -108,34 +133,58 @@ $(SLIB): $(LIBOBJS)
 	: AR $@
 	@$(AR) crs $@ $(LIBOBJS)
 
-# coverage summary
+# coverage summary: make COV=1 clean coverage
+coverage: shelltester 42ShellTest build/gcovr.html
+OKSH_REF	!= readlink -f oksh
+OKSH_REF	?= $(abspath oksh)
+OKCC_RUN	!= readlink -f okcc-run.sh
+OKCC_RUN	?= $(abspath okcc-run.sh)
+42ST		:= ../42ShellTester
+42ShellTest: okcc-run.sh okcc oksh
+	: $@er
+	@CC='$(CC)' bash $(42ST)/42ShellTester.sh --all\
+	  --reference $(OKSH_REF) $(OKCC_RUN)
 SHELLTESTER := ../shelltester
-shelltester: okcc-run.sh okcc $(SLIB)
-	cd $(SHELLTESTER) && ./configure --shell-to-test $(abspath $<)
-	$(MAKE) -C $(SHELLTESTER)/out check
-okcc.html: shelltester
-	gcovr --html $@
+shelltester: okcc-run.sh okcc
+	: $@
+	@cd $(SHELLTESTER) && CC='$(CC)' ./configure --shell-to-test $(OKCC_RUN)
+	@$(MAKE) -C $(SHELLTESTER)/out check
+# GCOVR
+build/gcovr.html: okcc
+	: GCOVR $@
+	@gcovr -s --html $@ $(SRCS:%=-f %) $(LIBSRCS:%=-f %) \
+	  --html-title 'OKCC Coverage Report' \
+	  --html-details --html-theme github.dark-blue \
+	  --gcov-executable $(COV_EXE) --object-directory build
+# LCOV
+build/lcov.info: okcc
+	lcov -c -d build/ -o $@
+build/lcov/index.html: build/lcov.info
+	genhtml -o build/lcov build/lcov.info
 
-build:
+build/:
 	mkdir -p '$@'
 
 build/pconfig.h: configure
-	mkdir -p build && cd build && LDFLAGS='$(LDFLAGS)' \
-	../configure --cc='$(CC)' --cflags='$(CFLAGS)' --enable-small
+	mkdir -p build && cd build && \
+	../configure # --enable-small
 
 clean:
-	rm -f okcc oksh okt? $(SLIB) build/*.o *.gcda *.gcno *.gcov
+	rm -f okcc oksh *.a *.o build/*.c build/*.o build/okt*
+	rm -f *.gc* build/*.gc* build/gcovr* build/lcov*
 
 # macos c99 does not have -MM
 depend: .depend
 .depend: build/pconfig.h
-	$(CC:c99=cc) -MM $(SRCS) $(LIBSRCS) $(CFLAGS) $(CPPFLAGS) | \
-	  sed '/.*:/s,^,build/,' >$@
+	$(CC:c99=cc) -MM okcc.c $(CFLAGS) $(CPPFLAGS) | \
+	  sed '/.*:/s,^,build/,;s,^  *, ,' > $@
+	$(CC:c99=cc) -MM main.c $(LIBSRCS) $(CFLAGS) $(CPPFLAGS) | \
+	  sed '/.*:/s,^,build/,;s,^  *, ,' >> $@
 -include .depend
 
 diffsyms_filter := awk '{sub(/\..*/,"",$$3); if ($$3 ~ /[^ ]/) {print $$3}}'
 PROG1	:= oksh
-PROG2	:= okt1
+PROG2	:= build/okt1
 diffsyms: $(PROG1) $(PROG2)
 	@nm $(PROG1) | $(diffsyms_filter) | sort -u > build/t1
 	@nm $(PROG2) | $(diffsyms_filter) | sort -u > build/t2
@@ -145,3 +194,4 @@ distclean: clean
 	rm -rf build
 
 .PHONY: all clean depend diffsyms distclean info test
+.PHONY: coverage 42ShellTest shelltester

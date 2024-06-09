@@ -41,7 +41,7 @@ inittraps(void)
 #else
 			static char *mess[NSIG + 1] = { NULL };
 			if (!mess[i])
-				mess[i] = strdup(strsignal(i));
+				mess[i] = str_save(strsignal(i), APERM);
 			sigtraps[i].mess = mess[i];
 #endif
 		}

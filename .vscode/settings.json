@@ -20,6 +20,9 @@
         "tuple": "c",
         "type_traits": "c",
         "utility": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "typeinfo": "c"
     },
 }

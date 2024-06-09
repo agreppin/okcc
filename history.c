@@ -571,7 +571,7 @@ sethistsize(int n)
 			memmove(history, histptr - offset, n * sizeof(char *));
 		}
 
-		tmp = reallocarray(histbase, n + 1, sizeof(char *));
+		tmp = areallocarray(histbase, n + 1, sizeof(char *), APERM);
 		if (tmp != NULL) {
 			histbase = tmp;
 			histsize = n;
@@ -623,7 +623,7 @@ init_histvec(void)
 		 * allocate one extra element so that histptr always
 		 * lies within array bounds
 		 */
-		histbase = reallocarray(NULL, histsize + 1, sizeof(char *));
+		histbase = areallocarray(NULL, histsize + 1, sizeof(char *), APERM);
 		if (histbase == NULL)
 			internal_errorf("allocating history storage: %s",
 			    strerror(errno));

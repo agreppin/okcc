@@ -606,8 +606,8 @@ c_brkcont(char **wp)
 
 	unwind(*wp[0] == 'b' ? LBREAK : LCONTIN);
 	/* NOTREACHED */
-#ifdef __COMPCERT__
-	return 1; /* avoid ccomp warning ... */
+#if (__COMPCERT__+0) || (__TINYC__+0)
+	return 1; /* avoid ccomp & tcc warning ... */
 #endif
 }
 

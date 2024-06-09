@@ -30,7 +30,7 @@ static struct op *casepart(int);
 static struct op *function_body(char *, int);
 static char **	wordlist(void);
 static struct op *block(ttype_t, struct op *, struct op *, char **);
-static struct op *newtp(ttype_t);
+/*static*/ struct op *newtp(ttype_t);
 static void	syntaxerr(const char *) __attribute__((__noreturn__));
 static void	nesting_push(struct nesting_state *, int);
 static void	nesting_pop(struct nesting_state *);
@@ -744,7 +744,7 @@ nesting_pop(struct nesting_state *saved)
 	nesting = *saved;
 }
 
-static struct op *
+/*static*/ struct op *
 newtp(ttype_t type)
 {
 	struct op *t;
